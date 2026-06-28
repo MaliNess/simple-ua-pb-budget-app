@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Offline budget board with XLSX import, drag-and-drop categorisation, labels, summaries, and backup restore.">
+  <title>Budget Board</title>
+  <link rel="stylesheet" href="styles.css?v=3.12.0">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-block">
+      <div class="brand-icon" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div>
+        <h1>Budget Board</h1>
+        <p id="boardMeta">0 expenses · 0 columns</p>
+      </div>
+    </div>
+
+    <div class="header-actions" aria-label="Board actions">
+      <button class="btn btn-danger-soft" id="deleteAllBtn" type="button" title="Delete all expense tickets">
+        <span aria-hidden="true">⌫</span> Delete All
+      </button>
+      <button class="btn" id="importXlsxBtn" type="button">
+        <span aria-hidden="true">⇩</span> Import XLSX
+      </button>
+      <button class="btn" id="summaryBtn" type="button">
+        <span aria-hidden="true">◫</span> Summary
+      </button>
+      <button class="btn" id="allPlannedBtn" type="button">
+        <span aria-hidden="true">◷</span> All Planned
+      </button>
+      <button class="btn" id="restoreBtn" type="button">
+        <span aria-hidden="true">↺</span> Restore
+      </button>
+      <button class="btn" id="exportBtn" type="button">
+        <span aria-hidden="true">⇧</span> Export Board
+      </button>
+      <button class="btn btn-primary" id="addColumnBtn" type="button">
+        <span aria-hidden="true">＋</span> Add Column
+      </button>
+    </div>
+  </header>
+
+  <main class="board-shell">
+    <section class="board" id="board" aria-label="Budget columns"></section>
+  </main>
+
+  <input id="xlsxInput" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+  <input id="backupInput" type="file" accept="application/json,.json" hidden>
+
+  <dialog class="modal" id="expenseDialog">
+    <form method="dialog" id="expenseForm" novalidate>
+      <div class="modal-header">
+        <h2 id="expenseDialogTitle">Add Expense</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="expenseId" type="hidden">
+
+        <div class="form-grid two-col">
+          <label class="field">
+            <span>Date</span>
+            <input id="expenseDate" type="text" placeholder="31.05.2026 20:36:03" autocomplete="off">
+            <small>Format: DD.MM.YYYY HH:mm:ss</small>
+          </label>
+          <label class="field">
+            <span>Card</span>
+            <input id="expenseCard" type="text" placeholder="4627 **** **** 2046" autocomplete="off">
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Description <b>*</b></span>
+          <input id="expenseDescription" type="text" required placeholder="Expense description">
+        </label>
+
+        <label class="field">
+          <span>Internal note</span>
+          <textarea id="expenseNote" rows="3" maxlength="2000" placeholder="Add a private comment about this expense"></textarea>
+          <small>Saved only inside this board and included in exported backups.</small>
+        </label>
+
+        <div class="form-grid two-col">
+          <label class="field">
+            <span>Original Category</span>
+            <input id="expenseOriginalCategory" type="text" placeholder="Супермаркети та продукти">
+          </label>
+          <label class="field">
+            <span>Column</span>
+            <select id="expenseColumn"></select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Matched planned expense</span>
+          <select id="expensePlannedMatch"></select>
+          <small>The same planned expense may contain several actual tickets. An actual ticket can belong to only one planned expense.</small>
+        </label>
+
+        <fieldset class="form-section">
+          <legend>Transaction</legend>
+          <div class="money-row">
+            <label class="field">
+              <span>Amount <b>*</b></span>
+              <input id="expenseAmount" type="text" inputmode="decimal" required placeholder="0,00">
+            </label>
+            <label class="field currency-field">
+              <span>Currency</span>
+              <select id="expenseCurrency" class="currency-select" data-default-currency="UAH"></select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Initial transaction</legend>
+          <div class="money-row">
+            <label class="field">
+              <span>Amount</span>
+              <input id="expenseInitialAmount" type="text" inputmode="decimal" placeholder="0,00">
+            </label>
+            <label class="field currency-field">
+              <span>Currency</span>
+              <select id="expenseInitialCurrency" class="currency-select" data-default-currency="UAH"></select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Remaining</legend>
+          <div class="money-row">
+            <label class="field">
+              <span>Amount</span>
+              <input id="expenseRemainingAmount" type="text" inputmode="decimal" placeholder="0,00">
+            </label>
+            <label class="field currency-field">
+              <span>Currency</span>
+              <select id="expenseRemainingCurrency" class="currency-select" data-default-currency="UAH"></select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section label-section">
+          <legend>Ticket label</legend>
+          <div class="label-options" id="expenseLabelOptions">
+            <label><input type="radio" name="ticketLabel" value="none" checked><span class="label-chip neutral">None</span></label>
+            <label><input type="radio" name="ticketLabel" value="blue"><span class="label-chip blue">Service</span></label>
+            <label><input type="radio" name="ticketLabel" value="green"><span class="label-chip green">Green</span></label>
+            <label><input type="radio" name="ticketLabel" value="yellow"><span class="label-chip yellow">Yellow</span></label>
+            <label><input type="radio" name="ticketLabel" value="red"><span class="label-chip red">Red</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" id="saveExpenseBtn" value="default" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="splitExpenseDialog">
+    <form method="dialog" id="splitExpenseForm" novalidate>
+      <div class="modal-header">
+        <h2>Split Expense</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="splitSourceExpenseId" type="hidden">
+        <div class="split-source-summary" id="splitSourceSummary"></div>
+
+        <label class="field">
+          <span>Extracted expense title <b>*</b></span>
+          <input id="splitDescription" type="text" required maxlength="240" placeholder="Expense part title">
+        </label>
+
+        <fieldset class="form-section split-basis-section">
+          <legend>Amount to extract</legend>
+          <div class="split-basis-options">
+            <label><input type="radio" name="splitBasis" value="plain" checked><span>Enter plain transaction</span></label>
+            <label id="splitInitialBasisOption"><input type="radio" name="splitBasis" value="initial"><span>Enter initial transaction</span></label>
+          </div>
+
+          <div class="form-grid two-col split-money-grid">
+            <label class="field">
+              <span>Plain transaction · <strong id="splitPlainCurrency">UAH</strong></span>
+              <input id="splitPlainAmount" type="text" inputmode="decimal" placeholder="0,00">
+            </label>
+            <label class="field">
+              <span>Initial transaction · <strong id="splitInitialCurrency">EUR</strong></span>
+              <input id="splitInitialAmount" type="text" inputmode="decimal" placeholder="0,00" readonly>
+            </label>
+          </div>
+          <small id="splitAmountHelp">Enter one amount. The other is calculated proportionally and rounded to two decimal places.</small>
+        </fieldset>
+
+        <div class="split-preview" id="splitPreview">Enter an amount to preview the split.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Create extracted expense</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="mergeExpenseDialog">
+    <form method="dialog" id="mergeExpenseForm" novalidate>
+      <div class="modal-header">
+        <h2>Merge Extracted Expenses</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="mergeParentExpenseId" type="hidden">
+        <div class="split-source-summary" id="mergeParentSummary"></div>
+
+        <fieldset class="form-section merge-selection-section">
+          <legend>Select extracted expenses</legend>
+          <div class="merge-select-actions">
+            <button class="btn btn-compact" id="mergeSelectAllBtn" type="button">Select all</button>
+            <button class="btn btn-compact" id="mergeClearSelectionBtn" type="button">Clear</button>
+          </div>
+          <div class="merge-child-list" id="mergeChildList"></div>
+          <small>Selected tickets will be removed after their amounts are restored to the parent expense.</small>
+        </fieldset>
+
+        <label class="field">
+          <span>Planned expense after merge</span>
+          <select id="mergePlannedMatch"></select>
+          <small>The parent can remain linked to one planned expense. Matches of removed extracted tickets are recalculated automatically.</small>
+        </label>
+
+        <div class="split-preview" id="mergePreview">Select at least one extracted expense.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Merge selected</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="columnDialog">
+    <form method="dialog" id="columnForm" novalidate>
+      <div class="modal-header">
+        <h2 id="columnDialogTitle">Add Column</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="columnId" type="hidden">
+        <label class="field">
+          <span>Column title <b>*</b></span>
+          <input id="columnTitle" type="text" required maxlength="60" placeholder="Food & Dining">
+        </label>
+        <label class="field">
+          <span>Colour</span>
+          <div class="color-control">
+            <input id="columnColor" type="color" value="#ff6b1a">
+            <input id="columnColorText" type="text" value="#ff6b1a" maxlength="7" aria-label="Hex colour">
+          </div>
+        </label>
+        <div class="palette" id="colorPalette" aria-label="Suggested colours"></div>
+        <label class="field">
+          <span>Folded column icon</span>
+          <div class="column-icon-control">
+            <span class="column-icon-preview" id="columnIconPreview" aria-hidden="true"></span>
+            <select id="columnIcon"></select>
+          </div>
+          <small>The selected Font Awesome icon is shown when the column is folded horizontally.</small>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="sortDialog">
+    <form method="dialog" id="sortForm" novalidate>
+      <div class="modal-header">
+        <h2>Sort ticket groups</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="sortColumnId" type="hidden">
+        <p class="dialog-intro">Choose which label group should appear first. Tickets inside each group are ordered newest first.</p>
+        <div class="sort-options">
+          <label class="sort-option">
+            <input type="radio" name="sortMode" value="unlabelled-first">
+            <span><strong>Unlabelled first</strong><small>Unlabelled → Service → Green → Yellow → Red</small></span>
+          </label>
+          <label class="sort-option">
+            <input type="radio" name="sortMode" value="green-first" checked>
+            <span><strong>Green first</strong><small>Green → Yellow → Red → Service → Unlabelled</small></span>
+          </label>
+          <label class="sort-option">
+            <input type="radio" name="sortMode" value="red-first">
+            <span><strong>Red first</strong><small>Red → Yellow → Green → Service → Unlabelled</small></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Apply sorting</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="maskDialog">
+    <form method="dialog" id="maskForm" novalidate>
+      <div class="modal-header">
+        <h2>Move from Unassigned by mask</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <label class="field">
+          <span>Ticket title / description mask <b>*</b></span>
+          <input id="maskPattern" type="text" required placeholder="Автоплатіж. Отримувач Благодійний фонд*" autocomplete="off">
+          <small><code>*</code> matches any text and <code>?</code> matches one character. Matching is case-insensitive and checks the whole title.</small>
+        </label>
+        <label class="field">
+          <span>Move matching tickets to</span>
+          <select id="maskTargetColumn"></select>
+        </label>
+        <div class="mask-preview" id="maskPreview">Enter a mask to preview matching Unassigned tickets.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Move matching tickets</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <dialog class="modal modal-small" id="bulkLabelDialog">
+    <form method="dialog" id="bulkLabelForm" novalidate>
+      <div class="modal-header">
+        <h2>Label unlabelled expenses</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="bulkLabelColumnId" type="hidden">
+        <p class="dialog-intro" id="bulkLabelDescription"></p>
+        <fieldset class="form-section label-section bulk-label-section">
+          <legend>Apply label</legend>
+          <div class="label-options">
+            <label><input type="radio" name="bulkTicketLabel" value="blue"><span class="label-chip blue">Service</span></label>
+            <label><input type="radio" name="bulkTicketLabel" value="green" checked><span class="label-chip green">Green</span></label>
+            <label><input type="radio" name="bulkTicketLabel" value="yellow"><span class="label-chip yellow">Yellow</span></label>
+            <label><input type="radio" name="bulkTicketLabel" value="red"><span class="label-chip red">Red</span></label>
+          </div>
+        </fieldset>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Apply to all</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="goalDialog">
+    <form method="dialog" id="goalForm" novalidate>
+      <div class="modal-header">
+        <h2 id="goalDialogTitle">Column goals</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="goalColumnId" type="hidden">
+        <p class="dialog-intro">Both goals are optional and work as maximum spending targets. The selected currency is used for both calculations.</p>
+        <label class="field">
+          <span>Goal currency</span>
+          <select id="goalCurrency" class="currency-select" data-default-currency="UAH"></select>
+        </label>
+        <label class="field">
+          <span>Maximum share of overall expenses (%)</span>
+          <input id="goalSharePercent" type="text" inputmode="decimal" placeholder="For example, 25">
+          <small>Compared with all plain transaction sums in the same currency across the board.</small>
+        </label>
+        <label class="field">
+          <span>Exact transaction limit</span>
+          <input id="goalAmountLimit" type="text" inputmode="decimal" placeholder="For example, 10 000">
+          <small>Compared with the column's plain transaction sum in the selected currency.</small>
+        </label>
+        <div class="goal-preview" id="goalPreview"></div>
+      </div>
+      <div class="modal-footer split-footer">
+        <button class="btn btn-danger-soft" id="clearGoalBtn" type="button">Clear goals</button>
+        <span class="footer-spacer"></span>
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Save goals</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="summaryDialog">
+    <form method="dialog">
+      <div class="modal-header">
+        <div>
+          <h2>Budget summary</h2>
+          <p class="modal-subtitle">Overall statistics, planned comparisons, category shares, and goal progress</p>
+        </div>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body summary-modal-body" id="summaryContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-dialog-close>Close</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <dialog class="modal modal-wide" id="allPlannedDialog">
+    <form method="dialog">
+      <div class="modal-header">
+        <div>
+          <h2>All planned expenses</h2>
+          <p class="modal-subtitle">Board-wide planned expenses, matched progress, remaining amounts, and column placement</p>
+        </div>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body all-planned-modal-body" id="allPlannedContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-dialog-close>Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-wide" id="plannedDialog">
+    <form method="dialog">
+      <div class="modal-header">
+        <div>
+          <h2 id="plannedDialogTitle">Planned expenses</h2>
+          <p class="modal-subtitle">Expected costs are kept separate from actual budget calculations.</p>
+        </div>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body planned-modal-body">
+        <input id="plannedColumnId" type="hidden">
+        <div class="planned-toolbar">
+          <div class="planned-overview" id="plannedOverview"></div>
+          <button class="btn btn-primary" id="addPlannedBtn" type="button"><span aria-hidden="true">＋</span> Add planned expense</button>
+        </div>
+        <div class="planned-list" id="plannedList"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-dialog-close>Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="plannedEditDialog">
+    <form method="dialog" id="plannedForm" novalidate>
+      <div class="modal-header">
+        <h2 id="plannedEditTitle">Add planned expense</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="plannedId" type="hidden">
+        <input id="plannedEditColumnId" type="hidden">
+        <input id="plannedSourceExpenseId" type="hidden">
+        <label class="field">
+          <span>Title / description <b>*</b></span>
+          <input id="plannedDescription" type="text" required maxlength="300" placeholder="For example, annual insurance renewal">
+          <small id="plannedTitleHelp">Enter a title that will help you recognise this expected expense later.</small>
+        </label>
+        <div class="planned-source-info" id="plannedSourceInfo" hidden></div>
+        <fieldset class="form-section">
+          <legend>Approximate price 1</legend>
+          <div class="money-row">
+            <label class="field">
+              <span>Amount <b>*</b></span>
+              <input id="plannedAmount1" type="text" inputmode="decimal" required placeholder="0,00">
+            </label>
+            <label class="field currency-field">
+              <span>Currency</span>
+              <select id="plannedCurrency1" class="currency-select" data-default-currency="UAH"></select>
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="form-section">
+          <legend>Approximate price 2 <span class="optional-text">optional</span></legend>
+          <div class="money-row">
+            <label class="field">
+              <span>Amount</span>
+              <input id="plannedAmount2" type="text" inputmode="decimal" placeholder="0,00">
+            </label>
+            <label class="field currency-field">
+              <span>Currency</span>
+              <select id="plannedCurrency2" class="currency-select" data-default-currency="EUR"></select>
+            </label>
+          </div>
+        </fieldset>
+        <label class="planned-closed-field">
+          <input id="plannedClosed" type="checkbox">
+          <span>
+            <strong>Closed</strong>
+            <small>Closed plans are excluded from the remaining planned total. A plan closes automatically when matched actual expenses reach or exceed price 1.</small>
+          </span>
+        </label>
+        <p class="dialog-intro planned-help">Planned expenses do not affect actual column totals, overall shares, labels, or goals. Open plans contribute only their remaining expected amount to the planned total in the column header.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Save planned expense</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="plannedMatchDialog">
+    <form method="dialog" id="plannedMatchForm" novalidate>
+      <div class="modal-header">
+        <h2 id="plannedMatchTitle">Match planned expense</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <input id="plannedMatchId" type="hidden">
+        <label class="field">
+          <span>Actual expenses</span>
+          <select id="plannedMatchExpense" multiple size="8"></select>
+          <small>Select one or more actual expenses from this column. Use Ctrl/Cmd or Shift to select several. Each actual expense can match only one planned expense.</small>
+        </label>
+        <div class="planned-match-preview" id="plannedMatchPreview"></div>
+      </div>
+      <div class="modal-footer split-footer">
+        <button class="btn btn-danger-soft" id="unmatchPlannedBtn" type="button">Remove all matches</button>
+        <span class="footer-spacer"></span>
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Save match</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-small" id="importDialog">
+    <form method="dialog">
+      <div class="modal-header">
+        <h2>Import XLSX</h2>
+        <button class="icon-btn close-btn" type="button" data-dialog-close aria-label="Close">×</button>
+      </div>
+      <div class="modal-body import-help">
+        <p>The first two rows are ignored. Data is read from row 3 in this order:</p>
+        <ol>
+          <li>Date</li>
+          <li>Category</li>
+          <li>Card</li>
+          <li>Description</li>
+          <li>Plain transaction sum</li>
+          <li>Plain currency</li>
+          <li>Initial transaction sum</li>
+          <li>Initial currency</li>
+          <li>Remaining sum</li>
+          <li>Remaining currency</li>
+        </ol>
+        <p>Imported tickets are added to <strong>Unassigned</strong>. A leading minus sign in the plain transaction sum is removed automatically.</p>
+        <p class="muted">The built-in importer reads the first worksheet of standard, non-encrypted <code>.xlsx</code> files. Legacy <code>.xls</code> files are not supported.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" data-dialog-close>Cancel</button>
+        <button class="btn btn-primary" id="chooseXlsxBtn" value="cancel" type="button">Choose XLSX</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="xlsx-lite.js?v=3.12.0"></script>
+  <script src="app.js?v=3.12.0"></script>
+</body>
+</html>
