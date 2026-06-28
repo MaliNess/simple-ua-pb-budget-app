@@ -1,12 +1,14 @@
 # Budget Board
 
-A browser-based, offline budget management board.
+A browser-based, offline budget management board. AI-generated for personal usage
 
 ## Start
 
 Open `index.html` in Chrome, Edge, Firefox, or another modern browser. No server or installation is required.
 
 On Windows, you can also double-click `START_APP.bat`.
+
+[Link to GH Page](https://maliness.github.io/simple-ua-pb-budget-app/)
 
 ## Included features
 
