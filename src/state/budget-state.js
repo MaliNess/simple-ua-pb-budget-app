@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const Core = globalThis.BudgetBoardCore || (typeof require === "function" ? require("./budget-core.js") : null);
+  const Core = globalThis.BudgetBoardCore || (typeof require === "function" ? require("../core/budget-core.js") : null);
   if (!Core) throw new Error("BudgetBoardCore must be loaded before budget-state.js.");
   const {
     cellText,

@@ -1,9 +1,9 @@
 (() => {
   "use strict";
 
-  const Core = globalThis.BudgetBoardCore || (typeof require === "function" ? require("./budget-core.js") : null);
-  const Tickets = globalThis.BudgetBoardTickets || (typeof require === "function" ? require("./budget-tickets.js") : null);
-  const Planning = globalThis.BudgetBoardPlanning || (typeof require === "function" ? require("./budget-planning.js") : null);
+  const Core = globalThis.BudgetBoardCore || (typeof require === "function" ? require("../core/budget-core.js") : null);
+  const Tickets = globalThis.BudgetBoardTickets || (typeof require === "function" ? require("../tickets/budget-tickets.js") : null);
+  const Planning = globalThis.BudgetBoardPlanning || (typeof require === "function" ? require("../planning/budget-planning.js") : null);
   if (!Core || !Tickets || !Planning) throw new Error("Budget summary dependencies must be loaded before budget-summary.js.");
   const {
     getCombinedActualAmountForCurrency,

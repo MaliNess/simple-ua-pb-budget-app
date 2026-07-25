@@ -1,14 +1,14 @@
 const assert = require("node:assert/strict");
-const core = require("../budget-core.js");
+const core = require("../src/core/budget-core.js");
 globalThis.BudgetBoardCore = core;
-globalThis.BudgetBoardTickets = require("../budget-tickets.js");
-globalThis.BudgetBoardPlanning = require("../budget-planning.js");
+globalThis.BudgetBoardTickets = require("../src/tickets/budget-tickets.js");
+globalThis.BudgetBoardPlanning = require("../src/planning/budget-planning.js");
 
-const planning = require("../budget-planning.js");
-const planningDialogs = require("../budget-planning-dialogs.js");
-const summary = require("../budget-summary.js");
-const summaryDialogs = require("../budget-summary-dialogs.js");
-const tickets = require("../budget-tickets.js");
+const planning = require("../src/planning/budget-planning.js");
+const planningDialogs = require("../src/planning/budget-planning-dialogs.js");
+const summary = require("../src/summary/budget-summary.js");
+const summaryDialogs = require("../src/summary/budget-summary-dialogs.js");
+const tickets = require("../src/tickets/budget-tickets.js");
 
 const LABELS = ["none", "blue", "green", "yellow", "red"];
 const CATEGORY_COLORS = ["#111111", "#222222", "#333333", "#444444", "#555555", "#666666", "#777777", "#888888"];

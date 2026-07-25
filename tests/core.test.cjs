@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const core = require("../budget-core.js");
+const core = require("../src/core/budget-core.js");
 
 function test(name, fn) {
   try {

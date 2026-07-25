@@ -1,9 +1,9 @@
 const assert = require("node:assert/strict");
-const core = require("../budget-core.js");
-const tickets = require("../budget-tickets.js");
-const summary = require("../budget-summary.js");
-const ui = require("../budget-ui.js");
-const boardRender = require("../budget-board-render.js");
+const core = require("../src/core/budget-core.js");
+const tickets = require("../src/tickets/budget-tickets.js");
+const summary = require("../src/summary/budget-summary.js");
+const ui = require("../src/app/budget-ui.js");
+const boardRender = require("../src/board/budget-board-render.js");
 
 const LABELS = ["none", "blue", "green", "yellow", "red"];
 const SORT_MODES = {

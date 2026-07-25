@@ -1,9 +1,9 @@
 const assert = require("node:assert/strict");
-const core = require("../budget-core.js");
+const core = require("../src/core/budget-core.js");
 globalThis.BudgetBoardCore = core;
 
-const splits = require("../budget-splits.js");
-const splitDialogs = require("../budget-split-dialogs.js");
+const splits = require("../src/splits/budget-splits.js");
+const splitDialogs = require("../src/splits/budget-split-dialogs.js");
 
 function test(name, fn) {
   try {

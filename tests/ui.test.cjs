@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const ui = require("../budget-ui.js");
+const ui = require("../src/app/budget-ui.js");
 
 function test(name, fn) {
   try {

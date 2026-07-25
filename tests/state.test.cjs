@@ -1,8 +1,8 @@
 const assert = require("node:assert/strict");
-const core = require("../budget-core.js");
+const core = require("../src/core/budget-core.js");
 globalThis.BudgetBoardCore = core;
 
-const stateTools = require("../budget-state.js");
+const stateTools = require("../src/state/budget-state.js");
 
 const LABELS = ["none", "blue", "green", "yellow", "red"];
 const SORT_MODES = {
