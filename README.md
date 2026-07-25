@@ -10,6 +10,57 @@ On Windows, you can also double-click `START_APP.bat`.
 
 [Link to GH Page](https://maliness.github.io/simple-ua-pb-budget-app/)
 
+## Development checks
+
+Run the focused logic tests with:
+
+```sh
+node tests/core.test.cjs
+node tests/modules.test.cjs
+node tests/state.test.cjs
+node tests/planning-summary.test.cjs
+node tests/splits.test.cjs
+node tests/ui.test.cjs
+node tests/render.test.cjs
+node tests/index-load-order.test.cjs
+```
+
+For a quick syntax pass across the browser scripts:
+
+```sh
+node --check budget-config.js
+node --check budget-dom.js
+node --check budget-core.js
+node --check budget-state.js
+node --check budget-import-export.js
+node --check budget-file-actions.js
+node --check budget-columns.js
+node --check budget-column-dialogs.js
+node --check budget-icons.js
+node --check budget-tickets.js
+node --check budget-expense-dialogs.js
+node --check budget-bulk-label-dialogs.js
+node --check budget-currencies.js
+node --check budget-planning.js
+node --check budget-planning-render.js
+node --check budget-planning-dialog-core.js
+node --check budget-planning-list-dialog.js
+node --check budget-planning-edit-dialog.js
+node --check budget-planning-match-dialog.js
+node --check budget-planning-dialogs.js
+node --check budget-summary.js
+node --check budget-summary-dialogs.js
+node --check budget-splits.js
+node --check budget-ui.js
+node --check budget-mask-actions.js
+node --check budget-split-dialogs.js
+node --check budget-board-render.js
+node --check budget-board-controller.js
+node --check budget-app-bootstrap.js
+node --check xlsx-lite.js
+node --check app.js
+```
+
 ## Included features
 
 - Create, rename, recolour, reorder, horizontally fold, and delete category columns. Choose a built-in Font Awesome icon for each folded column.

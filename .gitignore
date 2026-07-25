@@ -1,0 +1,16 @@
+# Local editor and IDE settings
+.idea/
+.vscode/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# Dependency folders, if the app is ever tested with external tooling
+node_modules/
