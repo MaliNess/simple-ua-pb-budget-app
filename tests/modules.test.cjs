@@ -21,6 +21,7 @@ const planningListDialog = require("../src/planning/budget-planning-list-dialog.
 const planningMatchDialog = require("../src/planning/budget-planning-match-dialog.js");
 const planningRender = require("../src/planning/budget-planning-render.js");
 const tickets = require("../src/tickets/budget-tickets.js");
+const ui = require("../src/app/budget-ui.js");
 
 const LABELS = ["none", "blue", "green", "yellow", "red"];
 const SORT_MODES = {
@@ -229,6 +230,41 @@ test("column dialog controller exposes column, sort, and goal handlers", () => {
   assert.equal(typeof controller.updateGoalPreview, "function");
 });
 
+test("column dialog opens add-column form and refreshes icon preview", () => {
+  let previewUpdated = false;
+  let clearedForm = null;
+  const els = {
+    columnDialogTitle: { textContent: "" },
+    columnId: { value: "stale" },
+    columnTitle: { value: "stale", focus() {} },
+    columnColor: { value: "" },
+    columnColorText: { value: "" },
+    columnIcon: { value: "" },
+    columnForm: { id: "columnForm" },
+    columnDialog: { opened: false }
+  };
+  const controller = columnDialogs.createColumnDialogController({
+    els,
+    getState: () => ({ columns: [] }),
+    palette: ["#111111", "#222222"],
+    normalizeColumnIcon: value => value || "wallet",
+    clearInvalidFields: form => { clearedForm = form; },
+    openDialog: dialog => { dialog.opened = true; },
+    updateColumnIconPreview: () => { previewUpdated = true; }
+  });
+
+  controller.openColumnDialog();
+
+  assert.equal(els.columnDialogTitle.textContent, "Add Column");
+  assert.equal(els.columnId.value, "");
+  assert.equal(els.columnTitle.value, "");
+  assert.equal(els.columnColor.value, "#222222");
+  assert.equal(els.columnIcon.value, "wallet");
+  assert.equal(previewUpdated, true);
+  assert.equal(clearedForm, els.columnForm);
+  assert.equal(els.columnDialog.opened, true);
+});
+
 test("config exposes stable defaults for offline startup", () => {
   assert.deepEqual(config.DEFAULT_CURRENCIES, ["UAH", "EUR", "USD"]);
   assert.equal(config.SORT_MODES["green-first"].label, "Green first");
@@ -270,7 +306,8 @@ test("planning renderer exposes planned list and comparison renderers", () => {
     pluralize: (_count, one, many) => many || one,
     isFiniteNumber: Number.isFinite,
     normalizeCurrency: value => value,
-    getCombinedActualAmountForCurrency: () => null
+    getCombinedActualAmountForCurrency: () => null,
+    renderDeleteIcon: ui.renderDeleteIcon
   });
 
   assert.equal(typeof renderer.renderPlannedCard, "function");

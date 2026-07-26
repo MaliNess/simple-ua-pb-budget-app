@@ -13,6 +13,7 @@
       getCombinedActualAmountForCurrency,
       getMatchedExpenseIds,
       getMatchedExpenses,
+      renderDeleteIcon,
       getPlannedPrices
     } = deps;
 
@@ -98,7 +99,7 @@
               </label>
               <button class="btn btn-compact" type="button" data-all-planned-action="edit" data-planned-id="${escapeHtml(plan.id)}">Edit</button>
               <button class="btn btn-compact ${linkedCount ? "" : "btn-primary"}" type="button" data-all-planned-action="match" data-planned-id="${escapeHtml(plan.id)}">${linkedCount ? "Edit matches" : "Match actuals"}</button>
-              <button class="icon-btn danger" type="button" data-all-planned-action="delete" data-planned-id="${escapeHtml(plan.id)}" title="Delete planned expense">Г—</button>
+              <button class="icon-btn danger" type="button" data-all-planned-action="delete" data-planned-id="${escapeHtml(plan.id)}" title="Delete planned expense" aria-label="Delete planned expense">${renderDeleteIcon()}</button>
             </div>
           </div>
           <div class="all-planned-price-grid">${priceCards}</div>
@@ -136,7 +137,7 @@
               </label>
               <button class="btn btn-compact" type="button" data-planned-action="edit" data-planned-id="${escapeHtml(plan.id)}">Edit</button>
               <button class="btn btn-compact ${matched ? "" : "btn-primary"}" type="button" data-planned-action="match" data-planned-id="${escapeHtml(plan.id)}">${matched ? "Edit matches" : "Match actuals"}</button>
-              <button class="icon-btn danger" type="button" data-planned-action="delete" data-planned-id="${escapeHtml(plan.id)}" title="Delete planned expense">Г—</button>
+              <button class="icon-btn danger" type="button" data-planned-action="delete" data-planned-id="${escapeHtml(plan.id)}" title="Delete planned expense" aria-label="Delete planned expense">${renderDeleteIcon()}</button>
             </div>
           </div>
           <div class="planned-expected"><span>Expected</span><div>${expectedMarkup}</div></div>

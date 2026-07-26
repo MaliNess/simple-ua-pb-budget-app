@@ -124,7 +124,7 @@
 
     const goalsMarkup = activeGoalColumns.length
       ? `<div class="goal-cards">${activeGoalColumns.map(column => renderSummaryGoalCard(column, summaryExpenses)).join("")}</div>`
-      : `<div class="summary-empty">No column goals yet. Use the <strong>◎</strong> button in a column header to add a maximum share or exact transaction limit.</div>`;
+      : `<div class="summary-empty">No column goals yet. Use the goal button in a column header to add a maximum share or exact transaction limit.</div>`;
 
     const plannedRows = plannedCurrencyStats.map(item => `
       <tr>

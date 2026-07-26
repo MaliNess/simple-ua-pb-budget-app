@@ -23,10 +23,12 @@
       updateColumnIconPreview,
       maskController,
       applyBulkLabelFromForm,
-      boardController
+      boardController,
+      renderActionIcon
     } = deps;
 
     function init() {
+      renderStaticIcons();
       renderPalette();
       renderColumnIconOptions();
       currencyController.refreshCurrencySelects();
@@ -49,6 +51,14 @@
       bindCurrencyEvents();
       boardController.bindBoardEvents();
       windowRef.addEventListener("beforeunload", persistState);
+    }
+
+    function renderStaticIcons() {
+      if (typeof renderActionIcon !== "function") return;
+      documentRef.querySelectorAll("[data-action-icon]").forEach(container => {
+        const iconName = container.dataset.actionIcon;
+        container.innerHTML = renderActionIcon(iconName);
+      });
     }
 
     function bindToolbarEvents() {

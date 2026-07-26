@@ -23,6 +23,7 @@
       normalizeCurrency,
       getCombinedActualAmountForCurrency,
       pluralize,
+      renderDeleteIcon,
       getPlannedPrices,
       planHasExpense,
       toEditableNumber,
@@ -68,6 +69,7 @@
       getCombinedActualAmountForCurrency,
       getMatchedExpenseIds,
       getMatchedExpenses: core.getMatchedExpenses,
+      renderDeleteIcon,
       getPlannedPrices
     });
 

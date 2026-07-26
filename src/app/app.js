@@ -68,7 +68,10 @@
     downloadBlob,
     escapeHtml,
     openDialog,
-    pluralize
+    pluralize,
+    renderActionIcon,
+    renderDeleteIcon,
+    renderTicketMetaIcon
   } = Ui;
   const {
     calculateExpenseSplit,
@@ -108,6 +111,9 @@
     cellText,
     isFiniteNumber,
     planHasExpense,
+    renderActionIcon,
+    renderDeleteIcon,
+    renderTicketMetaIcon,
     renderColumnIcon,
     getSortedColumnExpenses,
     getColumnSortMode,
@@ -167,6 +173,7 @@
     normalizeCurrency,
     getCombinedActualAmountForCurrency,
     pluralize,
+    renderDeleteIcon,
     getPlannedPrices,
     planHasExpense,
     toEditableNumber,
@@ -362,6 +369,7 @@
     escapeHtml,
     formatPercent,
     goalStatusClass,
+    updateColumnIconPreview,
     windowConfirm: message => window.confirm(message)
   });
   const boardController = BoardController.createBoardController({
@@ -405,7 +413,8 @@
     updateColumnIconPreview,
     maskController,
     applyBulkLabelFromForm: bulkLabelController.applyBulkLabelFromForm,
-    boardController
+    boardController,
+    renderActionIcon
   });
 
   bootstrap.init();

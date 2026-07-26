@@ -35,7 +35,8 @@
       escapeHtml,
       formatPercent,
       goalStatusClass,
-      windowConfirm
+      windowConfirm,
+      updateColumnIconPreview
     } = deps;
     const state = new Proxy({}, {
       get(_target, property) { return getState()[property]; },

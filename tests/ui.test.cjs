@@ -21,6 +21,12 @@ test("pluralize and capitalize keep UI text helpers predictable", () => {
   assert.equal(ui.capitalize("green"), "Green");
 });
 
+test("renderActionIcon emits inline svg markup", () => {
+  assert.match(ui.renderActionIcon("add"), /<svg class="action-icon"/);
+  assert.match(ui.renderActionIcon("deleteLeft", "toolbar-icon"), /toolbar-icon/);
+  assert.match(ui.renderDeleteIcon(), /action-icon-trash/);
+});
+
 test("cssEscape has a fallback for quoted selectors", () => {
   const originalCss = globalThis.CSS;
   try {

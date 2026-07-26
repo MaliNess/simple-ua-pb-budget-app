@@ -12,6 +12,9 @@
       cellText,
       isFiniteNumber,
       planHasExpense,
+      renderActionIcon,
+      renderDeleteIcon,
+      renderTicketMetaIcon,
       renderColumnIcon,
       getSortedColumnExpenses,
       getColumnSortMode,
@@ -62,23 +65,23 @@
           <article class="column" data-column-id="${escapeHtml(column.id)}" style="--column-color:${escapeHtml(column.color)}">
             <header class="column-header">
               <div class="column-title-row">
-                ${column.locked ? "" : `<span class="column-drag-handle" draggable="true" tabindex="0" role="button" data-column-id="${escapeHtml(column.id)}" aria-label="Reorder ${escapeHtml(column.title)} column. Drag, or use the left and right arrow keys." title="Drag to reorder · Arrow keys move left/right">⠿</span>`}
+                ${column.locked ? "" : `<span class="column-drag-handle" draggable="true" tabindex="0" role="button" data-column-id="${escapeHtml(column.id)}" aria-label="Reorder ${escapeHtml(column.title)} column. Drag, or use the left and right arrow keys." title="Drag to reorder · Arrow keys move left/right">${renderActionIcon("grip")}</span>`}
                 <span class="column-dot" aria-hidden="true"></span>
                 <h2 class="column-title" title="${escapeHtml(column.title)}">${escapeHtml(column.title)}</h2>
                 <span class="count-badge">${expenses.length}</span>
               </div>
               <div class="column-actions-row">
                 <button class="planned-count-btn ${openPlanCount ? "has-unmatched" : ""}" type="button" data-action="open-planned-list" data-column-id="${escapeHtml(column.id)}" title="Open planned expenses · ${openPlanCount} remaining (not closed)">
-                  <span aria-hidden="true">◷</span><strong>${openPlanCount}</strong><small>remaining</small>
+                  ${renderActionIcon("planned")}<strong>${openPlanCount}</strong><small>remaining</small>
                 </button>
                 <div class="column-actions">
-                  <button class="icon-btn" type="button" data-action="toggle-column-fold" data-column-id="${escapeHtml(column.id)}" title="Fold column horizontally" aria-label="Fold ${escapeHtml(column.title)} column">⇤</button>
-                  <button class="icon-btn ${hasActiveGoal(goal) ? "has-goal" : ""}" type="button" data-action="open-goal" data-column-id="${escapeHtml(column.id)}" title="${goalTitle}">◎</button>
-                  <button class="icon-btn" type="button" data-action="open-sort" data-column-id="${escapeHtml(column.id)}" title="Sort groups: ${escapeHtml(sortModes[sortMode].label)}">⇅</button>
-                  ${column.locked ? "" : `<button class="icon-btn mask-move-btn" type="button" data-action="open-mask-move" data-column-id="${escapeHtml(column.id)}" title="Move matching Unassigned tickets here">⇥</button>`}
-                  <button class="icon-btn" type="button" data-action="add-expense" data-column-id="${escapeHtml(column.id)}" title="Add expense">＋</button>
-                  ${column.locked ? "" : `<button class="icon-btn" type="button" data-action="edit-column" data-column-id="${escapeHtml(column.id)}" title="Edit column">✎</button>`}
-                  ${column.locked ? "" : `<button class="icon-btn danger" type="button" data-action="delete-column" data-column-id="${escapeHtml(column.id)}" title="Delete column">⌫</button>`}
+                  <button class="icon-btn" type="button" data-action="toggle-column-fold" data-column-id="${escapeHtml(column.id)}" title="Fold column horizontally" aria-label="Fold ${escapeHtml(column.title)} column">${renderActionIcon("foldLeft")}</button>
+                  <button class="icon-btn ${hasActiveGoal(goal) ? "has-goal" : ""}" type="button" data-action="open-goal" data-column-id="${escapeHtml(column.id)}" title="${goalTitle}" aria-label="${goalTitle}">${renderActionIcon("goal")}</button>
+                  <button class="icon-btn" type="button" data-action="open-sort" data-column-id="${escapeHtml(column.id)}" title="Sort groups: ${escapeHtml(sortModes[sortMode].label)}" aria-label="Sort groups">${renderActionIcon("sort")}</button>
+                  ${column.locked ? "" : `<button class="icon-btn mask-move-btn" type="button" data-action="open-mask-move" data-column-id="${escapeHtml(column.id)}" title="Move matching Unassigned tickets here" aria-label="Move matching Unassigned tickets here">${renderActionIcon("moveRight")}</button>`}
+                  <button class="icon-btn" type="button" data-action="add-expense" data-column-id="${escapeHtml(column.id)}" title="Add expense" aria-label="Add expense">${renderActionIcon("add")}</button>
+                  ${column.locked ? "" : `<button class="icon-btn" type="button" data-action="edit-column" data-column-id="${escapeHtml(column.id)}" title="Edit column" aria-label="Edit column">${renderActionIcon("edit")}</button>`}
+                  ${column.locked ? "" : `<button class="icon-btn danger" type="button" data-action="delete-column" data-column-id="${escapeHtml(column.id)}" title="Delete column" aria-label="Delete column">${renderActionIcon("deleteLeft", "action-icon-delete-left")}</button>`}
                 </div>
               </div>
               ${renderColumnSummary(state, column, expenses, boardTransactionSums)}
@@ -119,7 +122,7 @@
                 <button class="ticket-group-header" type="button" data-action="toggle-label-group" data-column-id="${escapeHtml(column.id)}" data-label="${label}" aria-expanded="${collapsed ? "false" : "true"}" title="${collapsed ? "Expand" : "Collapse"} ${escapeHtml(title)} tickets">
                   <span class="ticket-group-name"><span class="label-dot ${label}"></span><strong>${escapeHtml(title)}</strong><span class="ticket-group-count">${items.length}</span></span>
                   <span class="ticket-group-total">${totals}</span>
-                  <span class="ticket-group-chevron" aria-hidden="true">⌄</span>
+                  <span class="ticket-group-chevron">${renderActionIcon("chevronDown")}</span>
                 </button>
                 ${label === "none" ? `<button class="bulk-label-btn" type="button" data-action="open-bulk-label" data-column-id="${escapeHtml(column.id)}" title="Apply one label to all unlabelled expenses in this column">Label all</button>` : ""}
               </div>
@@ -250,7 +253,7 @@
               `).join("")}
             </div>
             <div class="split-children-actions">
-              <button class="btn btn-compact" type="button" data-action="merge-extracted" data-expense-id="${escapeHtml(expense.id)}">↶ Merge extracted</button>
+              <button class="btn btn-compact" type="button" data-action="merge-extracted" data-expense-id="${escapeHtml(expense.id)}">${renderActionIcon("merge")} Merge extracted</button>
             </div>
           </details>
         ` : ""}
@@ -266,20 +269,20 @@
               <div class="traffic-lights" aria-label="Ticket label">
                 ${["blue", "green", "yellow", "red"].map(label => `<button class="traffic-btn ${label} ${expense.label === label ? "active" : ""}" type="button" data-action="set-label" data-expense-id="${escapeHtml(expense.id)}" data-label="${label}" title="${escapeHtml(labelTitle(label))} label"></button>`).join("")}
               </div>
-              ${splitSource ? "" : `<button class="icon-btn split-expense-btn" type="button" data-action="split-expense" data-expense-id="${escapeHtml(expense.id)}" title="Split this expense" aria-label="Split expense">✂</button>`}
-              ${extractedExpenses.length ? `<button class="icon-btn merge-expense-btn" type="button" data-action="merge-extracted" data-expense-id="${escapeHtml(expense.id)}" title="Merge extracted expenses back" aria-label="Merge extracted expenses">↶</button>` : ""}
-              <button class="icon-btn plan-from-ticket-btn ${matchedPlan ? "has-matched-plan" : ""}" type="button" data-action="create-matched-plan-from-expense" data-expense-id="${escapeHtml(expense.id)}" title="${matchedPlan ? "Edit the matched planned expense" : "Create a matched planned expense from this ticket"}" aria-label="${matchedPlan ? "Edit matched planned expense" : "Create matched planned expense"}">◷</button>
-              <button class="icon-btn" type="button" data-action="edit-expense" data-expense-id="${escapeHtml(expense.id)}" title="Edit expense">✎</button>
-              <button class="icon-btn danger" type="button" data-action="delete-expense" data-expense-id="${escapeHtml(expense.id)}" title="Delete expense">Г—</button>
+              ${splitSource ? "" : `<button class="icon-btn split-expense-btn" type="button" data-action="split-expense" data-expense-id="${escapeHtml(expense.id)}" title="Split this expense" aria-label="Split expense">${renderActionIcon("split")}</button>`}
+              ${extractedExpenses.length ? `<button class="icon-btn merge-expense-btn" type="button" data-action="merge-extracted" data-expense-id="${escapeHtml(expense.id)}" title="Merge extracted expenses back" aria-label="Merge extracted expenses">${renderActionIcon("merge")}</button>` : ""}
+              <button class="icon-btn plan-from-ticket-btn ${matchedPlan ? "has-matched-plan" : ""}" type="button" data-action="create-matched-plan-from-expense" data-expense-id="${escapeHtml(expense.id)}" title="${matchedPlan ? "Edit the matched planned expense" : "Create a matched planned expense from this ticket"}" aria-label="${matchedPlan ? "Edit matched planned expense" : "Create matched planned expense"}">${renderActionIcon("clock")}</button>
+              <button class="icon-btn" type="button" data-action="edit-expense" data-expense-id="${escapeHtml(expense.id)}" title="Edit expense" aria-label="Edit expense">${renderActionIcon("edit")}</button>
+              <button class="icon-btn danger" type="button" data-action="delete-expense" data-expense-id="${escapeHtml(expense.id)}" title="Delete expense" aria-label="Delete expense">${renderDeleteIcon()}</button>
             </div>
           </div>
           <div class="ticket-description" title="${escapeHtml(expense.description)}">${escapeHtml(expense.description)}</div>
           <div class="ticket-meta">
-            <div class="meta-row"><span class="meta-icon" aria-hidden="true">▣</span><span class="meta-text">${escapeHtml(displayDate)}</span></div>
-            <div class="meta-row"><span class="meta-icon" aria-hidden="true">▭</span><span class="meta-text">${escapeHtml(card)}</span></div>
-            <div class="meta-row"><span class="meta-icon" aria-hidden="true">◇</span><span class="meta-text">${escapeHtml(originalCategory)}</span></div>
+            <div class="meta-row">${renderTicketMetaIcon("date")}<span class="meta-text">${escapeHtml(displayDate)}</span></div>
+            <div class="meta-row">${renderTicketMetaIcon("card")}<span class="meta-text">${escapeHtml(card)}</span></div>
+            <div class="meta-row">${renderTicketMetaIcon("category")}<span class="meta-text">${escapeHtml(originalCategory)}</span></div>
           </div>
-          ${note ? `<div class="ticket-note" title="${escapeHtml(note)}"><span class="ticket-note-icon" aria-hidden="true">✎</span><span>${escapeHtml(note)}</span></div>` : ""}
+          ${note ? `<div class="ticket-note" title="${escapeHtml(note)}">${renderActionIcon("edit", "ticket-note-icon")}<span>${escapeHtml(note)}</span></div>` : ""}
           ${splitRelationMarkup}
           ${footerParts.length ? `<div class="ticket-footer">${footerParts.map(part => `<span>${part}</span>`).join("")}</div>` : ""}
         </article>
