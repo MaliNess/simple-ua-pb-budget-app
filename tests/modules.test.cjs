@@ -265,6 +265,72 @@ test("column dialog opens add-column form and refreshes icon preview", () => {
   assert.equal(els.columnDialog.opened, true);
 });
 
+test("column dialog opens and saves goals with normalized currency", () => {
+  const state = {
+    columns: [
+      { id: "food", title: "Food", color: "#111111", goal: { currency: "uah", sharePercent: 25, amountLimit: 100 } }
+    ],
+    expenses: [
+      { id: "e1", columnId: "food", amount: 40, currency: "UAH" },
+      { id: "e2", columnId: "transport", amount: 60, currency: "UAH" }
+    ]
+  };
+  let committed = false;
+  let openedDialog = null;
+  let clearedForm = null;
+  const els = {
+    goalColumnId: { value: "" },
+    goalDialogTitle: { textContent: "" },
+    goalCurrency: { value: "" },
+    goalSharePercent: { value: "", focus() {}, classList: { add() {} } },
+    goalAmountLimit: { value: "", classList: { add() {} } },
+    clearGoalBtn: { disabled: true },
+    goalForm: { id: "goalForm" },
+    goalPreview: { innerHTML: "" },
+    goalDialog: { closed: false, close() { this.closed = true; } }
+  };
+  const controller = columnDialogs.createColumnDialogController({
+    els,
+    getState: () => state,
+    getColumnGoal: column => column.goal,
+    inferGoalCurrency: () => "UAH",
+    normalizeCurrency: core.normalizeCurrency,
+    isFiniteNumber: Number.isFinite,
+    toEditableNumber: value => String(value),
+    parseOptionalMoney: core.parseOptionalMoney,
+    hasActiveGoal: goal => Number.isFinite(goal.sharePercent) || Number.isFinite(goal.amountLimit),
+    clearInvalidFields: form => { clearedForm = form; },
+    openDialog: dialog => { openedDialog = dialog; },
+    getAmountForCurrency: (expenses, currency) => expenses
+      .filter(expense => core.normalizeCurrency(expense.currency) === currency)
+      .reduce((sum, expense) => sum + expense.amount, 0),
+    formatMoney: value => String(value),
+    escapeHtml: value => String(value ?? ""),
+    formatPercent: value => String(value),
+    goalStatusClass: () => "goal-good",
+    commit: () => { committed = true; },
+    showToast: () => {}
+  });
+
+  controller.openGoalDialog("food");
+
+  assert.equal(els.goalCurrency.value, "uah");
+  assert.match(els.goalPreview.innerHTML, /Current transaction sum/);
+  assert.equal(openedDialog, els.goalDialog);
+
+  els.goalCurrency.value = "eur";
+  els.goalSharePercent.value = "35";
+  els.goalAmountLimit.value = "125";
+  controller.saveGoalFromForm({ preventDefault() {}, submitter: { value: "default" } });
+
+  assert.equal(state.columns[0].goal.currency, "EUR");
+  assert.equal(state.columns[0].goal.sharePercent, 35);
+  assert.equal(state.columns[0].goal.amountLimit, 125);
+  assert.equal(committed, true);
+  assert.equal(clearedForm, els.goalForm);
+  assert.equal(els.goalDialog.closed, true);
+});
+
 test("config exposes stable defaults for offline startup", () => {
   assert.deepEqual(config.DEFAULT_CURRENCIES, ["UAH", "EUR", "USD"]);
   assert.equal(config.SORT_MODES["green-first"].label, "Green first");

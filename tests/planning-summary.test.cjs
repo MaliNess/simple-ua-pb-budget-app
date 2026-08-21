@@ -217,7 +217,11 @@ test("summary dialog can exclude Service labelled actual expenses", () => {
     goalStatusClass: () => "goal-neutral"
   });
 
-  assert.match(controller.renderSummaryModal(), /label-dot blue/);
+  const initialMarkup = controller.renderSummaryModal();
+  assert.match(initialMarkup, /label-dot blue/);
+  assert.match(initialMarkup, /Initial transaction totals/);
+  assert.match(initialMarkup, /<td class="numeric">90<\/td>/);
+  assert.match(initialMarkup, /<td class="numeric">12<\/td>/);
   controller.handleSummaryChange({
     target: {
       closest: selector => selector === '[data-summary-action="toggle-service-filter"]' ? { checked: true } : null
@@ -226,4 +230,6 @@ test("summary dialog can exclude Service labelled actual expenses", () => {
 
   assert.doesNotMatch(els.summaryContent.innerHTML, /label-dot blue/);
   assert.match(els.summaryContent.innerHTML, /1 service excluded/);
+  assert.doesNotMatch(els.summaryContent.innerHTML, /<td class="numeric">90<\/td>/);
+  assert.match(els.summaryContent.innerHTML, /<td class="numeric">40<\/td>/);
 });

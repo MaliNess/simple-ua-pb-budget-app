@@ -23,6 +23,7 @@
       getColumnSortMode,
       getColumnGoal,
       inferGoalCurrency,
+      normalizeCurrency,
       isFiniteNumber,
       toEditableNumber,
       parseOptionalMoney,

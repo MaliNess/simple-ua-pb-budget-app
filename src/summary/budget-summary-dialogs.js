@@ -57,6 +57,8 @@
     const excludedExpenseCount = state.expenses.length - summaryExpenses.length;
     const boardTotals = groupCurrency(summaryExpenses, "amount", "currency")
       .sort((a, b) => b.amount - a.amount);
+    const boardInitialTotals = groupCurrency(summaryExpenses, "initialAmount", "initialCurrency")
+      .sort((a, b) => b.amount - a.amount);
     const assignedCount = summaryExpenses.filter(expense => expense.columnId !== "unassigned").length;
     const assignedPercentage = summaryExpenses.length ? assignedCount / summaryExpenses.length * 100 : 0;
     const activeGoalColumns = state.columns.filter(column => hasActiveGoal(getColumnGoal(column)));
@@ -112,6 +114,17 @@
       `;
     }).join("");
 
+    const initialTotalsRows = boardInitialTotals.map(total => {
+      const matching = summaryExpenses.filter(expense => (normalizeCurrency(expense.initialCurrency) || "—") === total.currency && isFiniteNumber(expense.initialAmount));
+      return `
+        <tr>
+          <td><strong>${escapeHtml(total.currency)}</strong></td>
+          <td class="numeric">${formatMoney(total.amount)}</td>
+          <td class="numeric">${matching.length}</td>
+        </tr>
+      `;
+    }).join("");
+
     const categoryRows = buildCategoryBreakdown(boardTotals, summaryExpenses).map(row => `
       <tr>
         <td><span class="summary-column-name"><span class="summary-column-dot" style="--summary-column-color:${escapeHtml(row.column.color)}"></span>${escapeHtml(row.column.title)}</span></td>
@@ -161,6 +174,7 @@
       <section class="summary-panel">
         <div class="summary-panel-heading"><div><h3>Board totals</h3><p>Plain transaction sums are kept separate by currency.</p></div></div>
         ${totalsRows ? `<div class="table-scroll"><table class="stats-table"><thead><tr><th>Currency</th><th class="numeric">Total</th><th class="numeric">Tickets</th><th class="numeric">Average</th><th class="numeric">Largest</th></tr></thead><tbody>${totalsRows}</tbody></table></div>` : `<div class="summary-empty">Import or add expenses to see board totals.</div>`}
+        ${initialTotalsRows ? `<div class="summary-subsection"><h4>Initial transaction totals</h4><p>Initial expense sums are also grouped by their original currency.</p><div class="table-scroll"><table class="stats-table"><thead><tr><th>Currency</th><th class="numeric">Initial total</th><th class="numeric">Tickets</th></tr></thead><tbody>${initialTotalsRows}</tbody></table></div></div>` : ""}
       </section>
 
       <section class="summary-panel">
