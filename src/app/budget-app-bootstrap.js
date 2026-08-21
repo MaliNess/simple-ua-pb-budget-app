@@ -145,6 +145,7 @@
       els.plannedForm.addEventListener("submit", planningController.savePlannedFromForm);
       els.plannedMatchForm.addEventListener("submit", planningController.savePlannedMatchFromForm);
       els.plannedMatchExpense.addEventListener("change", planningController.updatePlannedMatchPreview);
+      els.plannedMatchExpenseCards.addEventListener("change", planningController.handlePlannedMatchCardChange);
       els.unmatchPlannedBtn.addEventListener("click", planningController.unmatchCurrentPlanned);
       [els.plannedEditDialog, els.plannedMatchDialog].forEach(dialog => dialog.addEventListener("close", planningController.handlePlannedChildDialogClose));
     }

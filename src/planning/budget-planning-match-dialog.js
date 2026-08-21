@@ -43,6 +43,11 @@
         ? candidates.map(expense => `<option value="${renderer.escapeHtml ? renderer.escapeHtml(expense.id) : escapeOption(expense.id)}" ${currentIds.has(expense.id) ? "selected" : ""}>${escapeOption(renderer.formatExpenseOption(expense))}</option>`).join("")
         : `<option value="">No available actual expenses in this column</option>`;
       els.plannedMatchExpense.disabled = !candidates.length;
+      if (els.plannedMatchExpenseCards) {
+        els.plannedMatchExpenseCards.innerHTML = candidates.length
+          ? candidates.map(expense => renderMatchCandidateCard(expense, currentIds.has(expense.id))).join("")
+          : `<div class="summary-empty">No available actual expenses in this column.</div>`;
+      }
       els.unmatchPlannedBtn.disabled = !currentIds.size;
       updatePlannedMatchPreview();
 
@@ -51,9 +56,31 @@
     }
 
     function getSelectedPlannedMatchIds() {
+      if (els.plannedMatchExpenseCards) {
+        const checkedIds = [...els.plannedMatchExpenseCards.querySelectorAll("[data-planned-match-expense-id]:checked")]
+          .map(input => input.value)
+          .filter(Boolean);
+        if (checkedIds.length || !els.plannedMatchExpenseCards.querySelector("[data-planned-match-expense-id]")) return checkedIds;
+      }
       return [...els.plannedMatchExpense.selectedOptions]
         .map(option => option.value)
         .filter(Boolean);
+    }
+
+    function handlePlannedMatchCardChange(event) {
+      const input = event.target.closest("[data-planned-match-expense-id]");
+      if (!input) return;
+      syncPlannedMatchSelectFromCards();
+      updatePlannedMatchPreview();
+    }
+
+    function syncPlannedMatchSelectFromCards() {
+      if (!els.plannedMatchExpenseCards) return;
+      const selectedIds = new Set([...els.plannedMatchExpenseCards.querySelectorAll("[data-planned-match-expense-id]:checked")]
+        .map(input => input.value));
+      [...els.plannedMatchExpense.options].forEach(option => {
+        option.selected = selectedIds.has(option.value);
+      });
     }
 
     function updatePlannedMatchPreview() {
@@ -109,8 +136,30 @@
         .replaceAll("'", "&#039;");
     }
 
+    function renderMatchCandidateCard(expense, checked) {
+      const description = expense.description || "Untitled expense";
+      const meta = renderer.formatExpenseOption
+        ? renderer.formatExpenseOption(expense)
+        : [
+          expense.date || "No date",
+          `${String(expense.amount || 0)} ${expense.currency || ""}`.trim(),
+          expense.card ? `Card ${expense.card}` : "",
+          expense.originalCategory || ""
+        ].filter(Boolean).join(" - ");
+      return `
+        <label class="planned-match-ticket-card ${checked ? "is-checked" : ""}">
+          <input type="checkbox" data-planned-match-expense-id value="${escapeOption(expense.id)}" ${checked ? "checked" : ""}>
+          <span class="planned-match-ticket-copy">
+            <strong>${escapeOption(description)}</strong>
+            <small>${escapeOption(meta)}</small>
+          </span>
+        </label>
+      `;
+    }
+
     return Object.freeze({
       getSelectedPlannedMatchIds,
+      handlePlannedMatchCardChange,
       openPlannedMatchDialog,
       savePlannedMatchFromForm,
       unmatchCurrentPlanned,

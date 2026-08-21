@@ -114,6 +114,7 @@
     plannedMatchTitle: root.getElementById("plannedMatchTitle"),
     plannedMatchId: root.getElementById("plannedMatchId"),
     plannedMatchExpense: root.getElementById("plannedMatchExpense"),
+    plannedMatchExpenseCards: root.getElementById("plannedMatchExpenseCards"),
     plannedMatchPreview: root.getElementById("plannedMatchPreview"),
     unmatchPlannedBtn: root.getElementById("unmatchPlannedBtn"),
     importDialog: root.getElementById("importDialog"),

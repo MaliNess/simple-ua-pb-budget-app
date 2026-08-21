@@ -519,8 +519,9 @@
         <input id="plannedMatchId" type="hidden">
         <label class="field">
           <span>Actual expenses</span>
-          <select id="plannedMatchExpense" multiple size="8"></select>
-          <small>Select one or more actual expenses from this column. Use Ctrl/Cmd or Shift to select several. Each actual expense can match only one planned expense.</small>
+          <select id="plannedMatchExpense" multiple size="8" hidden aria-hidden="true"></select>
+          <div class="planned-match-ticket-cards" id="plannedMatchExpenseCards" role="group" aria-label="Actual expenses"></div>
+          <small>Check one or more actual expense cards from this column. Each actual expense can match only one planned expense.</small>
         </label>
         <div class="planned-match-preview" id="plannedMatchPreview"></div>
       </div>

@@ -381,6 +381,63 @@ test("planning renderer exposes planned list and comparison renderers", () => {
   assert.equal(typeof renderer.renderPlanComparisons, "function");
 });
 
+test("planned match dialog renders actual expenses as checkable cards", () => {
+  const state = {
+    columns: [{ id: "food", title: "Food" }],
+    expenses: [
+      { id: "e1", columnId: "food", date: "01.01.2026", amount: 10, currency: "UAH", description: "Market" },
+      { id: "e2", columnId: "food", date: "02.01.2026", amount: 20, currency: "UAH", description: "Cafe" }
+    ],
+    plannedExpenses: [{ id: "p1", columnId: "food", description: "Meals", matchedExpenseIds: ["e1"] }]
+  };
+  const select = createFakeMultiSelect();
+  const cards = createFakeCardContainer();
+  const els = {
+    plannedMatchId: { value: "" },
+    plannedMatchTitle: { textContent: "" },
+    plannedMatchExpense: select,
+    plannedMatchExpenseCards: cards,
+    plannedMatchPreview: { innerHTML: "" },
+    unmatchPlannedBtn: { disabled: true },
+    plannedMatchDialog: { opened: false }
+  };
+  const controller = planningMatchDialog.createPlanningMatchDialog({
+    els,
+    core: { state },
+    renderer: {
+      formatExpenseOption: expense => `${expense.date} ${expense.description}`,
+      renderPlannedMatchPreview: (_plan, actuals) => actuals.map(actual => actual.id).join(",")
+    },
+    getMatchedExpenseIds: plan => plan.matchedExpenseIds || [],
+    setMatchedExpenseIds: (plan, ids) => { plan.matchedExpenseIds = ids; },
+    planHasExpense: (plan, id) => (plan.matchedExpenseIds || []).includes(id),
+    parseDateForSort: value => value === "02.01.2026" ? 2 : 1,
+    openDialog: dialog => { dialog.opened = true; },
+    showToast: () => {},
+    persistState: () => {},
+    renderBoard: () => {},
+    pluralize: (_count, one, many) => many || one,
+    prepareChildDialogReturn: () => {}
+  });
+
+  controller.openPlannedMatchDialog("p1");
+
+  assert.match(cards.innerHTML, /planned-match-ticket-card/);
+  assert.match(cards.innerHTML, /Cafe/);
+  assert.deepEqual(controller.getSelectedPlannedMatchIds(), ["e1"]);
+
+  cards.inputs.find(input => input.value === "e2").checked = true;
+  controller.handlePlannedMatchCardChange({
+    target: {
+      closest: selector => selector === "[data-planned-match-expense-id]" ? cards.inputs.find(input => input.value === "e2") : null
+    }
+  });
+
+  assert.deepEqual(controller.getSelectedPlannedMatchIds().sort(), ["e1", "e2"]);
+  assert.equal(select.options.find(option => option.value === "e2").selected, true);
+  assert.equal(els.plannedMatchPreview.innerHTML, "e1,e2");
+});
+
 test("planning dialog modules expose focused controllers", () => {
   const coreController = planningDialogCore.createPlanningDialogCore({
     getState: () => ({ columns: [], expenses: [], plannedExpenses: [] })
@@ -394,3 +451,43 @@ test("planning dialog modules expose focused controllers", () => {
   assert.equal(typeof editController.openPlannedEditDialog, "function");
   assert.equal(typeof matchController.openPlannedMatchDialog, "function");
 });
+
+function createFakeMultiSelect() {
+  return {
+    options: [],
+    disabled: false,
+    set innerHTML(markup) {
+      this._innerHTML = markup;
+      this.options = [...String(markup).matchAll(/<option value="([^"]*)"([^>]*)>/g)]
+        .map(match => ({ value: match[1], selected: /\sselected\b/.test(match[2]) }));
+    },
+    get innerHTML() {
+      return this._innerHTML || "";
+    },
+    get selectedOptions() {
+      return this.options.filter(option => option.selected);
+    }
+  };
+}
+
+function createFakeCardContainer() {
+  return {
+    inputs: [],
+    set innerHTML(markup) {
+      this._innerHTML = markup;
+      this.inputs = [...String(markup).matchAll(/<input type="checkbox"[^>]*value="([^"]*)"([^>]*)>/g)]
+        .map(match => ({ value: match[1], checked: /\schecked\b/.test(match[2]) }));
+    },
+    get innerHTML() {
+      return this._innerHTML || "";
+    },
+    querySelectorAll(selector) {
+      if (selector === "[data-planned-match-expense-id]:checked") return this.inputs.filter(input => input.checked);
+      if (selector === "[data-planned-match-expense-id]") return this.inputs;
+      return [];
+    },
+    querySelector(selector) {
+      return this.querySelectorAll(selector)[0] || null;
+    }
+  };
+}

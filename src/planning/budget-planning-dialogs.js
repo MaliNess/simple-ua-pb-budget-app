@@ -172,6 +172,7 @@
       savePlannedFromForm: editDialog.savePlannedFromForm,
       deletePlannedExpense: listDialog.deletePlannedExpense,
       openPlannedMatchDialog: matchDialog.openPlannedMatchDialog,
+      handlePlannedMatchCardChange: matchDialog.handlePlannedMatchCardChange,
       updatePlannedMatchPreview: matchDialog.updatePlannedMatchPreview,
       savePlannedMatchFromForm: matchDialog.savePlannedMatchFromForm,
       unmatchCurrentPlanned: matchDialog.unmatchCurrentPlanned,
