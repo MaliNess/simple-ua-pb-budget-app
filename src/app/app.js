@@ -127,7 +127,8 @@
     buildLabelStats,
     getCurrencyTotal,
     getAmountForCurrency,
-    goalStatusClass
+    goalStatusClass,
+    parseDateForSort
   });
 
   const DEFAULT_STATE = {
@@ -423,6 +424,8 @@
   function renderBoard() {
     const rendered = boardRenderer.renderBoard(state);
     els.boardMeta.textContent = rendered.metaText;
+    els.latestTicketDate.textContent = rendered.latestTicketDateText || "";
+    els.latestTicketDate.hidden = !rendered.latestTicketDateText;
     els.deleteAllBtn.disabled = rendered.deleteAllDisabled;
     els.board.innerHTML = rendered.html;
   }

@@ -348,6 +348,7 @@ test("dom helper looks up expected element ids", () => {
 
   assert.equal(elements.board.id, "board");
   assert.equal(elements.expenseForm.id, "expenseForm");
+  assert.ok(requested.includes("latestTicketDate"));
   assert.ok(requested.includes("allPlannedContent"));
 });
 

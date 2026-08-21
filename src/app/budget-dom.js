@@ -7,6 +7,7 @@
     return {
     board: root.getElementById("board"),
     boardMeta: root.getElementById("boardMeta"),
+    latestTicketDate: root.getElementById("latestTicketDate"),
     deleteAllBtn: root.getElementById("deleteAllBtn"),
     importXlsxBtn: root.getElementById("importXlsxBtn"),
     summaryBtn: root.getElementById("summaryBtn"),

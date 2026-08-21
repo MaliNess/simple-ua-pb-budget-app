@@ -28,12 +28,17 @@
       buildLabelStats,
       getCurrencyTotal,
       getAmountForCurrency,
-      goalStatusClass
+      goalStatusClass,
+      parseDateForSort = value => {
+        const parsed = Date.parse(value);
+        return Number.isNaN(parsed) ? 0 : parsed;
+      }
     } = options;
 
     function renderBoard(state) {
       const categoryCount = state.columns.filter(column => !column.locked).length;
       const boardTransactionSums = groupCurrency(state.expenses, "amount", "currency");
+      const latestTicketDateText = getLatestTicketDateText(state.expenses);
       const metaText = `${state.expenses.length} ${pluralize(state.expenses.length, "expense", "expenses")} · ${state.plannedExpenses.length} planned · ${categoryCount} ${pluralize(categoryCount, "column", "columns")}`;
 
       const html = state.columns.map(column => {
@@ -96,8 +101,19 @@
       return {
         deleteAllDisabled: state.expenses.length === 0,
         html,
+        latestTicketDateText,
         metaText
       };
+    }
+
+    function getLatestTicketDateText(expenses) {
+      const latest = expenses.reduce((current, expense) => {
+        const timestamp = parseDateForSort(expense.date);
+        if (!timestamp || timestamp <= (current?.timestamp || 0)) return current;
+        return { timestamp, date: cellText(expense.date) };
+      }, null);
+      if (!latest?.date) return "";
+      return `Latest: ${latest.date.split(/\s+/)[0]}`;
     }
 
     function renderTicketGroups(state, column, expenses) {

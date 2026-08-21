@@ -51,7 +51,8 @@ function makeRenderer() {
     buildLabelStats: (expenses, transactionSums) => tickets.buildLabelStats(expenses, transactionSums, LABELS),
     getCurrencyTotal: summary.getCurrencyTotal,
     getAmountForCurrency: summary.getAmountForCurrency,
-    goalStatusClass: (current, limit) => current > limit ? "goal-over" : "goal-good"
+    goalStatusClass: (current, limit) => current > limit ? "goal-over" : "goal-good",
+    parseDateForSort: core.parseDateForSort
   });
 }
 
@@ -102,6 +103,7 @@ test("board renderer emits board metadata and action hooks", () => {
 
   assert.equal(result.deleteAllDisabled, false);
   assert.match(result.metaText, /2 expenses/);
+  assert.equal(result.latestTicketDateText, "Latest: 10.06.2026");
   assert.match(result.metaText, /2 planned/);
   assert.match(result.html, /data-action="open-planned-list" data-column-id="food"/);
   assert.match(result.html, /data-action="toggle-label-group" data-column-id="food" data-label="green"/);
@@ -122,5 +124,6 @@ test("board renderer marks an empty board as delete-disabled", () => {
   });
 
   assert.equal(result.deleteAllDisabled, true);
+  assert.equal(result.latestTicketDateText, "");
   assert.match(result.html, /No unassigned expenses/);
 });
