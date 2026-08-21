@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Local Budget Board backup comparison page.">
+  <title>Budget Board Compare</title>
+  <link rel="stylesheet" href="styles.css?v=3.12.0">
+</head>
+<body class="compare-page">
+  <header class="app-header">
+    <div class="brand-block">
+      <div class="brand-icon" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div>
+        <div class="brand-title-row">
+          <h1>Budget Board</h1>
+          <span class="latest-ticket-date">Compare</span>
+        </div>
+        <p>Summary comparison for two exported board backups</p>
+      </div>
+    </div>
+
+    <div class="header-actions" aria-label="Comparison actions">
+      <a class="btn" href="index.html">Back to board</a>
+    </div>
+  </header>
+
+  <main class="compare-shell">
+    <section class="compare-upload-grid" aria-label="Board backup inputs">
+      <article class="compare-upload-panel">
+        <div>
+          <h2>Board A</h2>
+          <p>Choose the earlier or baseline export.</p>
+        </div>
+        <label class="compare-file-picker">
+          <span>Select backup JSON</span>
+          <input id="compareBoardA" type="file" accept="application/json,.json">
+        </label>
+        <small class="compare-file-status" id="compareBoardAStatus">No file selected.</small>
+      </article>
+
+      <article class="compare-upload-panel">
+        <div>
+          <h2>Board B</h2>
+          <p>Choose the later or comparison export.</p>
+        </div>
+        <label class="compare-file-picker">
+          <span>Select backup JSON</span>
+          <input id="compareBoardB" type="file" accept="application/json,.json">
+        </label>
+        <small class="compare-file-status" id="compareBoardBStatus">No file selected.</small>
+      </article>
+    </section>
+
+    <section class="compare-options-panel" aria-label="Comparison options">
+      <label class="summary-option-toggle">
+        <input id="compareExcludeService" type="checkbox">
+        <span>Exclude Service expenses from comparison</span>
+        <small>Applies to actual totals, shares, labels, goals, categories, and matched actual statistics.</small>
+      </label>
+    </section>
+
+    <section class="compare-content" id="compareContent">
+      <div class="summary-empty">Choose two exported board JSON backups to compare their summaries.</div>
+    </section>
+  </main>
+
+  <script src="src/app/budget-config.js"></script>
+  <script src="src/core/budget-core.js"></script>
+  <script src="src/state/budget-state.js"></script>
+  <script src="src/import/budget-import-export.js"></script>
+  <script src="src/tickets/budget-tickets.js"></script>
+  <script src="src/planning/budget-planning.js"></script>
+  <script src="src/summary/budget-summary.js"></script>
+  <script src="src/app/budget-ui.js"></script>
+  <script src="src/compare/budget-board-compare.js"></script>
+</body>
+</html>

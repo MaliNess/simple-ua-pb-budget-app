@@ -15,11 +15,20 @@ function test(name, fn) {
 const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 const scripts = [...html.matchAll(/<script\s+src="([^"?]+)(?:\?[^"]*)?"/g)].map(match => match[1]);
 const order = new Map(scripts.map((script, index) => [script, index]));
+const compareHtml = fs.readFileSync(path.join(__dirname, "..", "compare.html"), "utf8");
+const compareScripts = [...compareHtml.matchAll(/<script\s+src="([^"?]+)(?:\?[^"]*)?"/g)].map(match => match[1]);
+const compareOrder = new Map(compareScripts.map((script, index) => [script, index]));
 
 function before(first, second) {
   assert.ok(order.has(first), `${first} is loaded`);
   assert.ok(order.has(second), `${second} is loaded`);
   assert.ok(order.get(first) < order.get(second), `${first} loads before ${second}`);
+}
+
+function compareBefore(first, second) {
+  assert.ok(compareOrder.has(first), `${first} is loaded on compare page`);
+  assert.ok(compareOrder.has(second), `${second} is loaded on compare page`);
+  assert.ok(compareOrder.get(first) < compareOrder.get(second), `${first} loads before ${second} on compare page`);
 }
 
 test("index loads classic scripts in dependency order", () => {
@@ -47,4 +56,15 @@ test("index loads classic scripts in dependency order", () => {
   before("src/board/budget-board-controller.js", "src/app/budget-app-bootstrap.js");
   before("src/app/budget-app-bootstrap.js", "src/app/app.js");
   before("src/vendor/xlsx-lite.js", "src/app/app.js");
+});
+
+test("compare page loads classic scripts in dependency order", () => {
+  compareBefore("src/app/budget-config.js", "src/compare/budget-board-compare.js");
+  compareBefore("src/core/budget-core.js", "src/compare/budget-board-compare.js");
+  compareBefore("src/state/budget-state.js", "src/compare/budget-board-compare.js");
+  compareBefore("src/import/budget-import-export.js", "src/compare/budget-board-compare.js");
+  compareBefore("src/tickets/budget-tickets.js", "src/summary/budget-summary.js");
+  compareBefore("src/planning/budget-planning.js", "src/summary/budget-summary.js");
+  compareBefore("src/summary/budget-summary.js", "src/compare/budget-board-compare.js");
+  compareBefore("src/app/budget-ui.js", "src/compare/budget-board-compare.js");
 });

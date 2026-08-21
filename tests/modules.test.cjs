@@ -6,6 +6,7 @@ const config = require("../src/app/budget-config.js");
 const core = require("../src/core/budget-core.js");
 globalThis.BudgetBoardCore = core;
 
+const compare = require("../src/compare/budget-board-compare.js");
 const dom = require("../src/app/budget-dom.js");
 const importExport = require("../src/import/budget-import-export.js");
 const columns = require("../src/columns/budget-columns.js");
@@ -380,6 +381,62 @@ test("planning renderer exposes planned list and comparison renderers", () => {
   assert.equal(typeof renderer.renderPlannedCard, "function");
   assert.equal(typeof renderer.renderAllPlannedContent, "function");
   assert.equal(typeof renderer.renderPlanComparisons, "function");
+});
+
+test("board comparison summarizes two exported board backups", () => {
+  const boardA = compare.sanitizeBoardPayload({
+    app: "Budget Board",
+    state: {
+      columns: [
+        { id: "unassigned", title: "Unassigned", color: "#64748b", locked: true },
+        { id: "food", title: "Food", color: "#111111", goal: { currency: "UAH", amountLimit: 200, sharePercent: 80 } }
+      ],
+      expenses: [
+        { id: "a1", columnId: "food", order: 0, date: "01.01.2026 00:00:00", description: "Market", originalCategory: "Groceries", amount: 100, currency: "UAH", label: "green" }
+      ],
+      plannedExpenses: [
+        { id: "pa1", columnId: "food", description: "Groceries plan", amount1: 100, currency1: "UAH", matchedExpenseIds: ["a1"] }
+      ]
+    }
+  });
+  const boardB = compare.sanitizeBoardPayload({
+    app: "Budget Board",
+    state: {
+      columns: [
+        { id: "unassigned", title: "Unassigned", color: "#64748b", locked: true },
+        { id: "food", title: "Food", color: "#111111", goal: { currency: "UAH", amountLimit: 200, sharePercent: 80 } }
+      ],
+      expenses: [
+        { id: "b1", columnId: "food", order: 0, date: "02.01.2026 00:00:00", description: "Market", originalCategory: "Groceries", amount: 150, currency: "UAH", label: "green" },
+        { id: "b2", columnId: "food", order: 1, date: "03.01.2026 00:00:00", description: "Cafe", originalCategory: "Dining", amount: 20, currency: "EUR", label: "none" },
+        { id: "b3", columnId: "food", order: 2, date: "04.01.2026 00:00:00", description: "Hosting", originalCategory: "Service", amount: 50, currency: "UAH", label: "blue" }
+      ],
+      plannedExpenses: [
+        { id: "pb1", columnId: "food", description: "Groceries plan", amount1: 150, currency1: "UAH", matchedExpenseIds: [] }
+      ]
+    }
+  });
+
+  const markup = compare.renderComparison(boardA, boardB, { leftLabel: "A.json", rightLabel: "B.json" });
+  const excludedMarkup = compare.renderComparison(boardA, boardB, { leftLabel: "A.json", rightLabel: "B.json", excludeService: true });
+
+  assert.match(markup, /Actual totals/);
+  assert.match(markup, /Column stats/);
+  assert.match(markup, /Original category distribution/);
+  assert.match(markup, /Goal actual amounts/);
+  assert.match(markup, /Label stats/);
+  assert.match(markup, /Service/);
+  assert.match(markup, /75%/);
+  assert.match(markup, /Previous 1 - Delta <span class="compare-delta-down">\+2<\/span>/);
+  assert.match(markup, /Matched actuals[\s\S]*Previous 1 - Delta <span class="compare-delta-down">-1<\/span>/);
+  assert.match(excludedMarkup, /Previous 1 - Delta <span class="compare-delta-down">\+1<\/span>/);
+  assert.doesNotMatch(excludedMarkup, /Service/);
+  assert.match(excludedMarkup, /50,00/);
+  assert.match(excludedMarkup, /class="numeric compare-delta-down">\+50,00/);
+  assert.match(markup, /class="numeric compare-delta-up">\+100%/);
+  assert.match(markup, /Groceries/);
+  assert.match(markup, /limit 200,00, share 80%/);
+  assert.match(markup, /B\.json/);
 });
 
 test("planned match dialog renders actual expenses as checkable cards", () => {

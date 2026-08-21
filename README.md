@@ -76,6 +76,10 @@ Click **Summary** to view board-level statistics:
 
 The summary window includes **Exclude Service expenses from summary**. When checked, tickets labelled **Service** are excluded from actual-expense summary calculations, including totals, category charts, matched/unmatched actual counts, column shares, goals, and label distribution. Planned expenses still exist, but matched planned statistics use only the included actual tickets.
 
+## Compare Boards
+
+Open `compare.html` or use **Compare** in the board header to compare two exported JSON backups locally. The comparison page does not need a build, server, or deployment. Choose a Previous backup and a Current backup to compare headline counts, actual totals, initial totals, planned totals, column stats, Original Category distribution, active goal actual amounts, and label stats. Enable **Exclude Service expenses from comparison** to remove Service-labelled actual expenses from actual-based comparison sections.
+
 ## Column Goals
 
 Use the goal action in a column header to configure optional limits:
